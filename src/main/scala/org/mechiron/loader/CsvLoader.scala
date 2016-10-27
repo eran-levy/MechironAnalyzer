@@ -49,9 +49,6 @@ object CsvLoader {
     * @param folder - the folder to move
     */
   def moveLocalFolderToHdfs(folder: File): Unit = {
-    //TODO: read properties file
-    //TODO: load into hive in transactions
-
     val folderName = folder.getName
     val outputFolder = new File(folder.getAbsolutePath + File.separatorChar + "output")
     val localArrPath = outputFolder.listFiles().filter(_.getName.indexOf("store") == -1).map(x => new Path(x.getAbsolutePath))

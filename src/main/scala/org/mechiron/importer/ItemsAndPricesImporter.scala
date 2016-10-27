@@ -19,18 +19,18 @@ class ItemsAndPricesImporter extends Importer{
 
   def executeImport(sqlContext: SQLContext, filesLocationForProcess: String): Unit = {
     //define csv columns
-    val customSchema = StructType(Array(StructField("chain_id", StringType, false),
-      StructField("sub_chain_id", StringType, true),
-      StructField("store_id", StringType, false),
-      StructField("item_id", StringType, true),
-      StructField("item_price", DoubleType, true),
-      StructField("qty", DoubleType, true),
-      StructField("manufacture_name", StringType, true),
-      StructField("manufacture_country", StringType, true),
-      StructField("manufacture_item_desc", StringType, true),
-      StructField("item_name", StringType, true),
-      StructField("item_code", StringType, false),
-      StructField("price_update_date", TimestampType, true)))
+    val customSchema = StructType(Array(StructField("chain_id", StringType, nullable = false),
+      StructField("sub_chain_id", StringType, nullable = true),
+      StructField("store_id", StringType, nullable = false),
+      StructField("item_id", StringType, nullable = true),
+      StructField("item_price", DoubleType, nullable = true),
+      StructField("qty", DoubleType, nullable = true),
+      StructField("manufacture_name", StringType, nullable = true),
+      StructField("manufacture_country", StringType, nullable = true),
+      StructField("manufacture_item_desc", StringType, nullable = true),
+      StructField("item_name", StringType, nullable = true),
+      StructField("item_code", StringType, nullable = false),
+      StructField("price_update_date", TimestampType, nullable = true)))
 
 
     //read dataframe from mysql
@@ -83,7 +83,6 @@ class ItemsAndPricesImporter extends Importer{
     val sortedCsvDf = csvDf.filter(csvDf("item_code").isNotNull)
     val csvItemCode = sortedCsvDf.select(sortedCsvDf("item_code")).distinct.orderBy(sortedCsvDf("item_code"))
     val joinedStreams = itemsDf.join(csvItemCode, itemsDf("item_code")===csvItemCode("item_code"), "right_outer").filter(itemsDf("item_code").isNull).select(csvItemCode("item_code"))
-    //TODO: here the mapping i.e. item_name, manufacture_name , etc fixes shall occour
     val rowsToAdd = joinedStreams.count()
     logger.debug("successfully joined csv and items db streams, count of new item codes to be added: " + rowsToAdd)
     if(rowsToAdd>0) {

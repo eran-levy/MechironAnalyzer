@@ -14,13 +14,13 @@ class StoresImporter extends Importer{
   val logger = LogManager.getLogger(getClass)
   val mysqlBridge = new MySQLBridge()
   def executeImport(sqlContext: SQLContext, filesLocationForProcess: String): Unit = {
-    val customSchema = StructType(Array(StructField("chain_id", StringType, false),
-      StructField("chain_name", StringType, true),
-      StructField("store_id", StringType, false),
-      StructField("store_name", StringType, true),
-      StructField("store_address", StringType, true),
-      StructField("store_city", StringType, true),
-      StructField("store_zipcode", StringType, true)))
+    val customSchema = StructType(Array(StructField("chain_id", StringType, nullable = false),
+      StructField("chain_name", StringType, nullable = true),
+      StructField("store_id", StringType, nullable = false),
+      StructField("store_name", StringType, nullable = true),
+      StructField("store_address", StringType, nullable = true),
+      StructField("store_city", StringType, nullable = true),
+      StructField("store_zipcode", StringType, nullable = true)))
     val directoriesToIterate = new File(filesLocationForProcess).listFiles().filter(listedFile => listedFile.isDirectory).map(listedFile => new Path(listedFile.getAbsolutePath))
     if (directoriesToIterate.length > 0) {
       for (dir <- directoriesToIterate) {
