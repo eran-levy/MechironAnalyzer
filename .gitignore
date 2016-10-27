@@ -1,0 +1,7 @@
+*.log
+*.pyc
+*.class
+.idea
+target/*
+project/*
+
