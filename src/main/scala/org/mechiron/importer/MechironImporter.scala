@@ -15,7 +15,7 @@ object MechironImporter {
   def runImporters(sc: SparkContext): Unit = {
     val sqlContext = new SQLContext(sc)
     logger.debug("created sqlContext using the given sparkContext and running importer")
-//    new ItemsAndPricesImporter().executeImport(sqlContext, folderName.get)
+    new ItemsAndPricesImporter().executeImport(sqlContext, folderName.get)
     new StoresImporter().executeImport(sqlContext, folderName.get)
   }
 
