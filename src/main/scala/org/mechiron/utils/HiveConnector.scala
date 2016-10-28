@@ -3,7 +3,8 @@ package org.mechiron.utils
 import java.sql.{Connection, DriverManager}
 
 /**
-  * Created by eran on 10/09/16.
+  * Connect to Hive
+  * @author Eran Levy
   */
 class HiveConnector {
 

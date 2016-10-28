@@ -3,7 +3,11 @@ package org.mechiron.enhancer
 import org.mechiron.utils.SparkConnector
 
 /**
-  * Created by eran on 15/10/16.
+  * Items Enhancer unit - each retail name its item names/manufacture names/manufacture country names/etc different.
+  * Its main role is to unify the names (currently) simply based on the most frequent word
+  * Here we just run the same function for different columns in the "items" MySQL table
+  *
+  * @author Eran Levy
   */
 object EnhanceRunner {
   def main(args: Array[String]) {

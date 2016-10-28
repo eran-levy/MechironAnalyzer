@@ -4,7 +4,10 @@ import org.apache.logging.log4j.LogManager
 import org.apache.spark.{SparkConf, SparkContext}
 
 /**
-  * Created by eran on 18/10/16.
+  * Initiate a SparkConext
+  * EXPERIMENTAL - not tested using spark-submit
+  *
+  * @author Eran Levy
   */
 class SparkConnector {
   val logger = LogManager.getLogger(getClass)

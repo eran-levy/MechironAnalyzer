@@ -6,23 +6,36 @@ import org.apache.spark.sql.hive.HiveContext
 import org.mechiron.utils.MySQLBridge
 
 /**
-  * Created by eran on 20/09/16.
+  * Items Enhancer unit - each retail name its item names/manufacture names/manufacture country names/etc different.
+  * Its main role is to unify the names (currently) simply based on the most frequent word.
+  * Run the same function for different columns in the "dwdata" fact table located in our Hive server.
+  * We run a window function sql query that ranks the most frequent word for a given column.
+  *
+  * The Hive server has been configured to utilize Spark as its execution engine so quering Hive using the Hive JDBC
+  * driver was problematic since it was bit heavy in the Kryo serialization/deseralization processes.
+  * Spark handled it quite efficiently, so we initiate an HiveContext to query and then perform the batch updates into
+  * the Mysql server.
+  *
+  *
+  * @author Eran Levy
   */
 class ItemsEnhancer(sc: SparkContext) {
   val logger = LogManager.getLogger(getClass)
 
-  def sparkFuncEnhance(tableName: String): Unit = {
-    logger.debug("starting values enhancer... for tableName: " +tableName)
+  def sparkFuncEnhance(columnName: String): Unit = {
+    logger.debug("starting values enhancer... for tableName: " +columnName)
     val mysqlConnection = new MySQLBridge().connectJdbc()
     //auto commit to false so we will be able to perform btach updates efficiently
     mysqlConnection.setAutoCommit(false)
 
     val hiveContext = new HiveContext(sc)
-    val df = hiveContext.sql("select item_code, " + tableName + " from (select item_code," + tableName + ", rank() over " +
-      "(partition by item_code order by thenum desc) as therank from (select item_code, " + tableName + ", count(*) as thenum " +
-      "from dwdata group by " + tableName + ", item_code) as b) as y where y.therank=1")
+    //window function to rank the most frequent word for the given column
+    //TODO: replace this window function sql query with the Spark API
+    val df = hiveContext.sql("select item_code, " + columnName + " from (select item_code," + columnName + ", rank() over " +
+      "(partition by item_code order by thenum desc) as therank from (select item_code, " + columnName + ", count(*) as thenum " +
+      "from dwdata group by " + columnName + ", item_code) as b) as y where y.therank=1")
 
-    val ps = mysqlConnection.prepareStatement("UPDATE items SET "+ tableName +"=? WHERE item_code=?")
+    val ps = mysqlConnection.prepareStatement("UPDATE items SET "+ columnName +"=? WHERE item_code=?")
     var index = 0
     val rowsArr = df.collect()
     logger.debug("successfully collected results from dwdata Hive store...")

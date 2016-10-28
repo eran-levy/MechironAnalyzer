@@ -4,7 +4,8 @@ import org.apache.hadoop.conf._
 import org.apache.hadoop.fs._
 
 /**
-  * Created by eran on 10/09/16.
+  * Connect to Hadoop FS
+  * @author Eran Levy
   */
 class HdfsConnector {
 

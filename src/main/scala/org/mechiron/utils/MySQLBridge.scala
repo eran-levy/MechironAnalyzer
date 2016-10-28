@@ -7,7 +7,9 @@ import org.apache.logging.log4j.LogManager
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 /**
-  * Created by eran on 08/10/16.
+  * Connect to MySQL and several utility functions
+  *
+  * @author Eran Levy
   */
 class MySQLBridge {
   val logger = LogManager.getLogger(getClass)
