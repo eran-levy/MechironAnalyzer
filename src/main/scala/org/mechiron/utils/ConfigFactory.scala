@@ -4,12 +4,21 @@ import java.util.Properties
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
+
 /**
-  * Created by eran on 26/10/16.
+  * A singleton object to handle all configuration properties in the resources/config.properties
+  *
+  * @author Eran Levy
   */
 object ConfigFactory {
   val props = new Properties()
   var configProps = mutable.Map[String,String]()
+
+  /**
+    * Return a configuration value for the given configuration property key
+    * @param configKey a configuration property in config.properties
+    * @return  a configuration value for the given configuration property key
+    */
   def getProperty(configKey: String):Option[String] = {
     if(props.size==0) {
       val inputStream = ConfigFactory.getClass.getClassLoader.getResourceAsStream("config.properties")

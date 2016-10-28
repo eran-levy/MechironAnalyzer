@@ -4,21 +4,36 @@ import java.io.File
 
 import org.apache.hadoop.fs.Path
 import org.apache.logging.log4j.LogManager
-import org.apache.spark.sql.{DataFrame, Row, SQLContext, SaveMode}
+import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import org.apache.spark.sql.types._
 import org.mechiron.utils.{ConfigFactory, MySQLBridge}
 
 
 /**
-  * Created by eran on 13/07/16.
+  * Run an ETL process to import new items and updated prices into the "items" and "prices" mysql tables
+  *
+  * Iterate the the mechiron_downloaded_data_location folders that are in the following structure:
+  * YYYY-MM-dd_HH_mm_ss/output/retail_name_YYYY-MM-dd_HH_mm_ss.csv
+  * Each "output" folder contains the aggregated CSV files downloaded per each retail
+  *
+  *  @see the Mechiron GitHub repository (https://github.com/eran-levy/Mechiron) for the Python project
+  *      that downloads the prices CSV files
+  *
+  * @author Eran Levy
   */
 class ItemsAndPricesImporter extends Importer{
 
   val mysqlBridge = new MySQLBridge()
   val logger = LogManager.getLogger(getClass)
 
+  /**
+    * Iterate the filesLocationForProcess folders and execute its ETL processes
+    *
+    * @param sqlContext the Spark SQLContext initiated with the existing SparkContext
+    * @param filesLocationForProcess the folders to iterate mechiron_downloaded_data_location property
+    */
   def executeImport(sqlContext: SQLContext, filesLocationForProcess: String): Unit = {
-    //define csv columns
+    //define csv columns used by the databricks sprak CSV parser
     val customSchema = StructType(Array(StructField("chain_id", StringType, nullable = false),
       StructField("sub_chain_id", StringType, nullable = true),
       StructField("store_id", StringType, nullable = false),
@@ -32,8 +47,7 @@ class ItemsAndPricesImporter extends Importer{
       StructField("item_code", StringType, nullable = false),
       StructField("price_update_date", TimestampType, nullable = true)))
 
-
-    //read dataframe from mysql
+    //read dataframes from mysql
     val itemsDfMysql = mysqlBridge.connect(sqlContext,"items")
     val pricesDfMysql = mysqlBridge.connect(sqlContext,"prices")
 
@@ -53,10 +67,11 @@ class ItemsAndPricesImporter extends Importer{
     //for hdfs file access: hdfs://localhost:9000/user/mechiron/testitems.csv
     //local - "/home/eran/mechiron-downloads/2016-07-09_06_53_03/output/RamiLevi.csv"
     val directoriesToIterate = new File(filesLocationForProcess).listFiles().filter(listedFile => listedFile.isDirectory).map(listedFile => new Path(listedFile.getAbsolutePath))
+    //iterate the mechiron_downloaded_data_location folders
     if (directoriesToIterate.length > 0) {
-      for (dir <- directoriesToIterate) {
+      for (dir <- directoriesToIterate) { //found output folder
         logger.debug("starting to iterate files in: " + dir)
-        //for each date folder get its output folder where the files reside
+        //for each date folder get its output folder where the files reside and exclude the stores CSV file which we have a dedicated ETL process
         val outputFolder = new File(dir.toString + File.separatorChar + "output").listFiles().filter(listedFile => listedFile.isFile && listedFile.getName.indexOf("store") == -1).map(listedFile => new Path(listedFile.getAbsolutePath))
         if(outputFolder.length>0) {
           for (outputFile <- outputFolder) {
@@ -76,10 +91,20 @@ class ItemsAndPricesImporter extends Importer{
 
   }
 
+  /**
+    * ETL process to add new items item_code into the "items" mysql table
+    * Select the MySQL "items" table into a dedicated dataframe
+    * Right-join the selected mysql table with the given CSV dataframe
+    * Append the new items into the "items" table with the new item_code only - the rest with value: "None" -
+    * the enhancer will be in charge of providing the most relevant names: items_name, manufacture_name, etc
+    * @see ItemsEnhancer for more information
+    *
+    * @param sqlContext the Spark SQLContext initiated with the existing SparkContext
+    * @param itemsDf the selected Mysql items dataframe
+    * @param csvDf the parsed CSV dataframe
+    */
   def loadNewItemCodes(sqlContext: SQLContext, itemsDf: DataFrame, csvDf: DataFrame): Unit = {
-    //connect the Hive metastore persisted in mysql
     logger.debug("starting to load new item codes into the items table")
-
     val sortedCsvDf = csvDf.filter(csvDf("item_code").isNotNull)
     val csvItemCode = sortedCsvDf.select(sortedCsvDf("item_code")).distinct.orderBy(sortedCsvDf("item_code"))
     val joinedStreams = itemsDf.join(csvItemCode, itemsDf("item_code")===csvItemCode("item_code"), "right_outer").filter(itemsDf("item_code").isNull).select(csvItemCode("item_code"))
@@ -94,6 +119,16 @@ class ItemsAndPricesImporter extends Importer{
     logger.debug("finished loading new item codes into the items table")
   }
 
+  /**
+    * ETL process to add new and updated prices into the "prices" mysql table
+    * EXPERIMENTAL - for performance purposes saved the selected mysql dataframe into Parquet
+    * Right-join the selected mysql table with the given CSV dataframe
+    * Append the new prices into the "prices" mysql fact table
+    *
+    * @param pricesDf the selected mysql prices dataframe - as mentioned previously created the dataframe based on
+    *                 Parquet
+    * @param csvDf the parsed CSV dataframe
+    */
   def loadUpdatedOrNewPricesForItems(pricesDf: DataFrame, csvDf: DataFrame): Unit = {
     logger.debug("starting to load new prices into the prices table")
     val sortedCsvDf = csvDf.filter(csvDf("item_code").isNotNull)

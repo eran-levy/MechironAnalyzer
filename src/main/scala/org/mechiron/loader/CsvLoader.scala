@@ -7,10 +7,18 @@ import org.apache.logging.log4j.LogManager
 import org.mechiron.utils.{ConfigFactory, HdfsConnector, HiveConnector}
 
 
-
-
 /**
-  * Created by eran on 23/07/16.
+  * Load downloaded CSV files into the "dwdata" Hive table
+  * This is a big fact table meant to grow.
+  * Currently used by the enhancer classes but later on can be used for additional purposes (ETL processes,
+  * analysis, etc)
+  * Iterate the mechiron_downloaded_data_location folders and for per each CSV:
+  * 1. copy to HDFS location: mechiron_hdfs_data_folder
+  * 2. load into the Hive table
+  *
+  * Files are encoded in UTF-8 so there shouldnt be any encoding issues with the Hebrew chars
+  *
+  * @author Eran Levy
   */
 object CsvLoader {
 
@@ -73,8 +81,6 @@ object CsvLoader {
   }
 
   def main(args: Array[String]) {
-    val loader = CsvLoader
     loadFoldersToHdfs(folderName.get)
-
   }
 }

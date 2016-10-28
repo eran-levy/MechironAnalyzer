@@ -8,8 +8,9 @@ import org.mechiron.utils.SparkConnector
 object EnhanceRunner {
   def main(args: Array[String]) {
     val sc = new SparkConnector().initSparkContext()
-    new ItemsEnhancer(sc).sparkFuncEnhance("item_name")
-    new ItemsEnhancer(sc).sparkFuncEnhance("manufacture_name")
-    new ItemsEnhancer(sc).sparkFuncEnhance("manufacture_country")
+    val enhancer = new ItemsEnhancer(sc)
+    enhancer.sparkFuncEnhance("item_name")
+    enhancer.sparkFuncEnhance("manufacture_name")
+    enhancer.sparkFuncEnhance("manufacture_country")
   }
 }

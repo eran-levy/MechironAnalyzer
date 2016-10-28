@@ -1,7 +1,5 @@
 package org.mechiron.enhancer
 
-import java.sql.PreparedStatement
-
 import org.apache.logging.log4j.LogManager
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.hive.HiveContext
