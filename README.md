@@ -10,13 +10,24 @@ Who are the main manufacturers that compete on the money that we spend as consum
 What are the pricing trends for a specific products category?
 and much more!
 
+**Ah, hmmm, Its also an opensource project!** You can use it and I will be more than happy if you could contribute to it...
+
 ## The overall project structure
-The **Mechiron** project has been seperated into 2 GitHub repositories:
-1. [Mechiron repository] (https://github.com/eran-levy/Mechiron) - is responsible to gather the information published from the configured FTP sources and export into a unified CSV format. Written in Python and can be extended easily. For more information see the GitHub repository README.
-2. MechironAnalyzer (this GitHub repository) - which is reponsible for the data processing. 
+The **Mechiron** project has been seperated into 2 opensource GitHub repositories:
+- [Mechiron repository] (https://github.com/eran-levy/Mechiron) - is responsible to gather the information published from the configured FTP sources and export into a unified CSV format. Written in Python and can be extended easily. For more information see the GitHub repository README.
+- MechironAnalyzer (this GitHub repository) - which is reponsible for the data processing. 
 
 ## MechironAnalyzer project structure
-This project
+This project currently separated into 3 main units:
+- The MechironImporter: is in charge of processing the downloaded raw CSV data, joining it with the existing data, validation, cleansing, transformation and importing the items, prices and stores. 
+- The CsvLoader: load the raw CSV data files into HDFS and load into the "dwdata" Hive table that will be used by the different data enhancers.
+- The Enhancer: utilize the large dataset we collect over time in order to enhance the processed data, i.e. item names, manufacture names, etc. 
+
+**Since its an experimental, currently its very basic and have to be improved.** For example, the names enhancer performs unification based on simple frequecy or the imported can be improved with better validation, cleansing and exception handling.
+
+Documentation will be improved, see more information in the code itself.
+
+## Installation
 
 
 
