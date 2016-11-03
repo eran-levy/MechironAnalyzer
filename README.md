@@ -54,6 +54,7 @@ sbt compile
 * Run one of the relevant units: MechironImporter, CsvLoader or the EnhanceRunner
 
 For comments or further detilas, please don't hesitate to mail me anytime: mceranlevy@gmail.com
-Good luck!
+I will continue to maintain the project - new features, unit tests, better error handling, etc.
+Stay tuned,
 Eran Levy
 
