@@ -26,6 +26,8 @@ class MySQLBridge {
     val connProps = new Properties()
     connProps.setProperty("user", mysqlUser.get)
     connProps.setProperty("password", mysqlPass.get)
+    connProps.setProperty("characterEncoding", "UTF-8")
+    connProps.setProperty("useUnicode", "true")
     sqlContext.read.jdbc(mysqlUrl.get,tableName,connProps)
   }
 
@@ -33,6 +35,8 @@ class MySQLBridge {
     val connProps = new Properties()
     connProps.setProperty("user", mysqlUser.get)
     connProps.setProperty("password", mysqlPass.get)
+    connProps.setProperty("characterEncoding", "UTF-8")
+    connProps.setProperty("useUnicode", "true")
     resultsetDf.write.mode(saveMode).jdbc(mysqlUrl.get, tableName, connProps)
     logger.debug("successfully persisted results to mysql table: " + tableName)
     true
